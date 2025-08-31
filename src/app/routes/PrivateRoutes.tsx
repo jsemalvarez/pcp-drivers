@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { DriverPage } from '../../features/driver/DriverPage'
 
 export const PrivateRoutes = () => {
   return (
@@ -8,12 +9,4 @@ export const PrivateRoutes = () => {
         <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   )
-}
-
-const DriverPage = () => {
-    return(
-        <div>
-            DriverPage
-        </div>
-    )
 }
