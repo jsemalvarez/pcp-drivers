@@ -1,13 +1,13 @@
 import { useState } from "react";
+import { loginWithEmailPassword } from "../../app/firebase/authProvider";
 
 export const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ email, password });
-    // Aquí va la lógica de login
+    await loginWithEmailPassword({email, password}); 
   };
 
   return (
@@ -39,7 +39,7 @@ export const LoginPage = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="**********"
               required
               className="w-full px-4 py-2 mt-1 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             />

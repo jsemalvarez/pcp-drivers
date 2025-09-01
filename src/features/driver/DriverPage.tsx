@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { logout } from "../../app/firebase/authProvider";
 
 const initLatLng = {
     lat: -38.00022116740122,
@@ -11,6 +12,10 @@ export const DriverPage = () => {
 
   const [available, setAvailable] = useState(false);
 
+  const handleLogout = () => {
+    logout()
+  }
+
   return (
     <div className="flex flex-col h-screen bg-gradient-to-b from-primary to-secondary">
       {/* Header */}
@@ -19,7 +24,10 @@ export const DriverPage = () => {
           <h2 className="text-lg text-secondary font-semibold">Juan Pérez</h2>
           <p className="text-sm text-gray-300">Patente: ABC123</p>
         </div>
-        <button className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600">
+        <button 
+          className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
+          onClick={handleLogout}
+        >
           Salir
         </button>
       </header>

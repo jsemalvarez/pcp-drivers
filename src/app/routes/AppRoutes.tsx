@@ -1,10 +1,17 @@
 import { Navigate, Route, Routes } from "react-router-dom"
 import { PrivateRoutes } from "./PrivateRoutes"
 import { PublicRoutes } from "./PublicRoutes"
+import { useCheckAuth } from "../../features/auth/hooks/useCheckAuth"
 
 export const AppRoutes = () => {
 
-    const isAuthenticated:boolean = false;
+    const { checking, isAuthenticated } = useCheckAuth()
+
+    if(checking){
+        return(
+            <p>Cargando...</p>
+        )
+    }
 
     return (
         <Routes>
