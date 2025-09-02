@@ -2,6 +2,8 @@ import { useState } from "react";
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import { logout } from "../../app/firebase/authProvider";
+import { useGeolocation } from "./hooks/useGeolacation";
+import { RecenterMap } from "./DriverPosition";
 
 const initLatLng = {
     lat: -38.00022116740122,
@@ -12,9 +14,20 @@ export const DriverPage = () => {
 
   const [available, setAvailable] = useState(false);
 
+  const { position: driverPosition, error, loading, isSharing, toggleSharing } = useGeolocation(initLatLng)
+
   const handleLogout = () => {
     logout()
   }
+
+  const handleToggleSharingPosition = () => {
+    toggleSharing()
+    setAvailable(false)
+  }
+
+  if (loading) return <p>Obteniendo ubicación...</p>;
+  
+  // if (error) return <p>Error: {error}</p>;
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-b from-primary to-secondary">
@@ -34,51 +47,95 @@ export const DriverPage = () => {
 
       {/* Body */}
       <main className="flex flex-col flex-1 gap-4 p-4 max-w-xl mx-auto w-full">
+
+        <button 
+          // className="w-full py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-800 cursor-pointer"
+          className={`px-6 py-3 rounded-xl font-semibold shadow-md transition
+            ${isSharing ? "bg-red-500 text-white" : "bg-green-600 text-white"}`}
+          onClick={handleToggleSharingPosition}
+        >
+          {isSharing ? "Dejar de Compartir Ubicación" : "Click para Compartir Ubicación"}
+        </button>
+
         {/* Estado del móvil */}
-        <div className="flex justify-between items-center border border-white rounded-lg p-4 shadow-sm bg-primary">
-          <div>
-            <label className="block text-sm font-medium text-secondary">
-              Estado:
-            </label>
-            <p
-              className={`mt-1 font-semibold ${
-                available ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {available ? "Disponible" : "No disponible"}
-            </p>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={available}
-              onChange={(e) => setAvailable(e.target.checked)}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-red-600 rounded-full peer peer-checked:bg-green-600 transition-colors"></div>
-            <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
-          </label>
-        </div>
+        {
+          isSharing && (
+            <div className="flex justify-between items-center border border-white rounded-lg p-4 shadow-sm bg-primary">
+              
+              <div>
+                <label className="block text-sm font-medium text-secondary">
+                  Estado:
+                </label>
+                <p
+                  className={`mt-1 font-semibold ${
+                    available ? "text-green-600" : "text-red-600"
+                  }`}
+                >
+                  {
+                    isSharing
+                      ? available ? "Disponible" : "No disponible"
+                      :'Sin Compartir Ubicación '
+                  }
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={available}
+                  onChange={(e) => setAvailable(e.target.checked)}
+                  className="sr-only peer"
+                  disabled={!isSharing}
+                />
+                <div className={`w-11 h-6 ${isSharing?'bg-red-600':'bg-gray-600'} rounded-full peer peer-checked:bg-green-600 transition-colors`}></div>
+                <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+              </label>
+            </div>
+          )
+        }
 
         {/* Mapa */}
-        <div className="flex-1 border border-white overflow-hidden rounded-lg shadow-sm bg-gray-100">
-          <MapContainer center={initLatLng} zoom={14} scrollWheelZoom={true}>
-              <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
+        <div className="flex-1 border border-white overflow-hidden rounded-lg shadow-sm bg-gray-100 bg-gray-700">
 
-              {
-                available && (
-                  <Marker position={initLatLng}>
-                    <Popup>
-                      A pretty CSS3 popup. <br /> Easily customizable.
-                    </Popup>
-                  </Marker>
-                )
-              }
+          {
 
-          </MapContainer>
+            isSharing && (
+              <MapContainer center={driverPosition} zoom={14} scrollWheelZoom={true}>
+                  <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+
+                  {
+                    available && (
+                      <>
+                        <RecenterMap position={ driverPosition } />
+                        <Marker position={ driverPosition }>
+                          <Popup>
+                            A pretty CSS3 popup. <br /> Easily customizable.
+                          </Popup>
+                        </Marker>
+                      </>
+                    )
+                  }
+
+              </MapContainer>
+            )
+          }
+          {
+            error
+            ?(
+              <>
+                <p>
+                  El mapa no se puede ver porque:                  
+                </p>
+                <p>
+                  {error}
+                </p>
+              </>
+            ):(
+              <p>No se esta compartiendo la ubicacion</p>
+            )
+          }
         </div>
 
         {/* Botón de soporte */}
