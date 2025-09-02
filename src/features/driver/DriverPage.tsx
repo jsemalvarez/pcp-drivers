@@ -1,9 +1,11 @@
 import { useState } from "react";
 
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { MapContainer, TileLayer } from 'react-leaflet'
 import { logout } from "../../app/firebase/authProvider";
 import { useGeolocation } from "./hooks/useGeolacation";
 import { RecenterMap } from "./DriverPosition";
+import { Markers } from "../common/markers/Markers";
+import { DriverMarker } from "../common/markers/DriverMarker";
 
 const initLatLng = {
     lat: -38.00022116740122,
@@ -109,11 +111,10 @@ export const DriverPage = () => {
                     available && (
                       <>
                         <RecenterMap position={ driverPosition } />
-                        <Marker position={ driverPosition }>
-                          <Popup>
-                            A pretty CSS3 popup. <br /> Easily customizable.
-                          </Popup>
-                        </Marker>
+                        <DriverMarker 
+                          position={ driverPosition }
+                        />
+                        <Markers />
                       </>
                     )
                   }
