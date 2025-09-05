@@ -7,6 +7,7 @@ import { RecenterMap } from "./DriverPosition";
 import { Markers } from "../common/markers/Markers";
 import { DriverMarker } from "../common/markers/DriverMarker";
 import { FetchingLocation } from "./components/FetchingLocation";
+import { ErrorLocation } from "./components/ErrorLocation";
 
 const initLatLng = {
     lat: -38.00022116740122,
@@ -30,7 +31,7 @@ export const DriverPage = () => {
 
   if (loading) return <FetchingLocation />;
   
-  // if (error) return <p>Error: {error}</p>;
+  if (error) return <ErrorLocation errorMessage={error} />;
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-b from-primary to-secondary">
@@ -97,11 +98,12 @@ export const DriverPage = () => {
         }
 
         {/* Mapa */}
-        <div className="flex-1 border border-white overflow-hidden rounded-lg shadow-sm bg-gray-100 bg-gray-700">
+        <div className="flex justify-center items-center flex-1 border border-white overflow-hidden rounded-lg shadow-sm bg-gray-100 bg-gray-700">
 
           {
 
-            isSharing && (
+            isSharing
+            ?(
               <MapContainer center={driverPosition} zoom={14} scrollWheelZoom={true}>
                   <TileLayer
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -121,21 +123,8 @@ export const DriverPage = () => {
                   <Markers />
 
               </MapContainer>
-            )
-          }
-          {
-            error
-            ?(
-              <>
-                <p>
-                  El mapa no se puede ver porque:                  
-                </p>
-                <p>
-                  {error}
-                </p>
-              </>
             ):(
-              <p>No se esta compartiendo la ubicacion</p>
+              <ErrorLocation errorMessage={null}/>
             )
           }
         </div>
