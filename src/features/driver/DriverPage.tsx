@@ -6,6 +6,7 @@ import { useGeolocation } from "./hooks/useGeolacation";
 import { RecenterMap } from "./DriverPosition";
 import { Markers } from "../common/markers/Markers";
 import { DriverMarker } from "../common/markers/DriverMarker";
+import { FetchingLocation } from "./components/FetchingLocation";
 
 const initLatLng = {
     lat: -38.00022116740122,
@@ -27,7 +28,7 @@ export const DriverPage = () => {
     setAvailable(false)
   }
 
-  if (loading) return <p>Obteniendo ubicación...</p>;
+  if (loading) return <FetchingLocation />;
   
   // if (error) return <p>Error: {error}</p>;
 
