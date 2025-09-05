@@ -114,10 +114,10 @@ export const DriverPage = () => {
                         <DriverMarker 
                           position={ driverPosition }
                         />
-                        <Markers />
                       </>
                     )
                   }
+                  <Markers />
 
               </MapContainer>
             )
