@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { MapContainer, TileLayer } from 'react-leaflet'
 import { logout } from "../../app/firebase/authProvider";
@@ -8,6 +8,10 @@ import { Markers } from "../common/markers/Markers";
 import { DriverMarker } from "../common/markers/DriverMarker";
 import { FetchingLocation } from "./components/FetchingLocation";
 import { ErrorLocation } from "./components/ErrorLocation";
+import { updateDriverData } from "../../app/firebase/firestoreProbider";
+import { useCheckAuth } from "../auth/hooks/useCheckAuth";
+
+
 
 const initLatLng = {
     lat: -38.00022116740122,
@@ -16,9 +20,29 @@ const initLatLng = {
 
 export const DriverPage = () => {
 
-  const [available, setAvailable] = useState(false);
+  const [isAvailable, setIsAvailable] = useState(false);
+  const { userId } = useCheckAuth()
 
   const { position: driverPosition, error, loading, isSharing, toggleSharing } = useGeolocation(initLatLng)
+  
+  const driverPositionRef = useRef(driverPosition);
+
+  useEffect(() => {
+    driverPositionRef.current = driverPosition;
+  }, [driverPosition]);
+
+  useEffect(() => {
+    if (!userId || !isSharing || !isAvailable) return;
+
+    const sendPosition = async () => {
+      const { lat, lng } = driverPositionRef.current;
+      updateDriverData(userId, { position: { lat, lng } });
+    };
+
+    const interval = setInterval(sendPosition, 15000);
+    return () => clearInterval(interval);
+  }, [userId, isSharing, isAvailable]);
+
 
   const handleLogout = () => {
     logout()
@@ -26,7 +50,14 @@ export const DriverPage = () => {
 
   const handleToggleSharingPosition = () => {
     toggleSharing()
-    setAvailable(false)
+    setIsAvailable(false)
+  }
+
+  const handleIsAvailable = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsAvailable(e.target.checked);
+    if(userId){
+      updateDriverData(userId, { isActive: e.target.checked });
+    }
   }
 
   if (loading) return <FetchingLocation />;
@@ -72,12 +103,12 @@ export const DriverPage = () => {
                 </label>
                 <p
                   className={`mt-1 font-semibold ${
-                    available ? "text-green-600" : "text-red-600"
+                    isAvailable ? "text-green-600" : "text-red-600"
                   }`}
                 >
                   {
                     isSharing
-                      ? available ? "Disponible" : "No disponible"
+                      ? isAvailable ? "Disponible" : "No disponible"
                       :'Sin Compartir Ubicación '
                   }
                 </p>
@@ -85,8 +116,8 @@ export const DriverPage = () => {
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={available}
-                  onChange={(e) => setAvailable(e.target.checked)}
+                  checked={isAvailable}
+                  onChange={handleIsAvailable}
                   className="sr-only peer"
                   disabled={!isSharing}
                 />
@@ -98,12 +129,12 @@ export const DriverPage = () => {
         }
 
         {/* Mapa */}
-        <div className="flex justify-center items-center flex-1 border border-white overflow-hidden rounded-lg shadow-sm bg-gray-100 bg-gray-700">
+        <div className="flex-1 border border-white overflow-hidden rounded-lg shadow-sm bg-gray-100 bg-gray-700">
 
           {
 
             isSharing
-            ?(
+            ?(              
               <MapContainer center={driverPosition} zoom={14} scrollWheelZoom={true}>
                   <TileLayer
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -111,7 +142,7 @@ export const DriverPage = () => {
                   />
 
                   {
-                    available && (
+                    isAvailable && (
                       <>
                         <RecenterMap position={ driverPosition } />
                         <DriverMarker 
@@ -122,9 +153,11 @@ export const DriverPage = () => {
                   }
                   <Markers />
 
-              </MapContainer>
+              </MapContainer>              
             ):(
-              <ErrorLocation errorMessage={null}/>
+              <div className="h-full flex justify-center items-center">
+                <ErrorLocation errorMessage={null}/>
+              </div>
             )
           }
         </div>

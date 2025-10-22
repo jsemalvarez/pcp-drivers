@@ -22,6 +22,7 @@ export const Markers = () => {
 
           return(
             <Marker 
+              key={place.id}
               position={place.postion}
               icon={IconMuseum}
             />
